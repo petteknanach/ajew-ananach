@@ -20,6 +20,7 @@ import AudioPlayerScreen from './screens/AudioPlayerScreen';
 import HisbodedusScreen from './screens/HisbodedusScreen';
 import PetekGeneratorScreen from './screens/PetekGeneratorScreen';
 import SmartFeedScreen from './screens/SmartFeedScreen';
+import CompassScreen from './screens/CompassScreen';
 
 // ── Constants ──
 const TIKUN_HAKLALI_PSALMS = [16, 32, 41, 42, 59, 77, 90, 105, 137, 150];
@@ -188,6 +189,7 @@ function HomeScreen({ navigation }) {
                   { icon: 'timer', label: 'Hisbodedus', color: '#27ae60', screen: 'Hisbodedus' },
                   { icon: 'headphones', label: 'Audio', color: '#9b59b6', screen: 'AudioPlayer' },
                   { icon: 'auto-stories', label: 'Tikun HaKlali', color: '#e74c3c', screen: 'TikunHaKlali' },
+                  { icon: 'explore', label: 'Jerusalem', color: '#FFD700', screen: 'Compass' },
                   { icon: 'star', label: 'Petek', color: '#c0392b', screen: 'PetekGenerator' },
                   { icon: 'bookmark', label: 'Bookmarks', color: '#9b59b6', screen: 'BookmarksTab' },
                   { icon: 'settings', label: 'Settings', color: '#7f8c8d', screen: 'Settings' },
@@ -660,6 +662,7 @@ function HomeStack() {
       <Stack.Screen name="PetekGenerator" component={PetekGeneratorScreen} />
       <Stack.Screen name="AudioPlayer" component={AudioPlayerScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="Compass" component={CompassScreen} />
     </Stack.Navigator>
   );
 }

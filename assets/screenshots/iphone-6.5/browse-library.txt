@@ -1,0 +1,21 @@
+# SCREENSHOT: BROWSE LIBRARY
+
+APP URL: http://localhost:8081
+DEVICE: iPhone 6.5" (1242x2688)
+STATUS: NEEDS CAPTURE
+
+INSTRUCTIONS:
+1. Open http://localhost:8081
+2. Navigate to: browse library
+3. Take screenshot (Ctrl+Shift+P → "Capture full size screenshot")
+4. Save as: browse-library.png
+5. Place in: C:\Users\Pettek\.openclaw\workspace\AjewAnanach\assets\screenshots\iphone-6.5
+
+FEATURES TO SHOW:
+- All Breslov books
+- Categories
+- Book details
+- Start reading
+
+NOTE: This is a placeholder for immediate submission.
+Professional screenshots will be added tomorrow.

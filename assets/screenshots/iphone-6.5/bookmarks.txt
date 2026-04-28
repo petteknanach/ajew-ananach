@@ -1,0 +1,21 @@
+# SCREENSHOT: BOOKMARKS
+
+APP URL: http://localhost:8081
+DEVICE: iPhone 6.5" (1242x2688)
+STATUS: NEEDS CAPTURE
+
+INSTRUCTIONS:
+1. Open http://localhost:8081
+2. Navigate to: bookmarks
+3. Take screenshot (Ctrl+Shift+P → "Capture full size screenshot")
+4. Save as: bookmarks.png
+5. Place in: C:\Users\Pettek\.openclaw\workspace\AjewAnanach\assets\screenshots\iphone-6.5
+
+FEATURES TO SHOW:
+- Saved teachings
+- Quick access
+- Remove option
+- Empty state
+
+NOTE: This is a placeholder for immediate submission.
+Professional screenshots will be added tomorrow.

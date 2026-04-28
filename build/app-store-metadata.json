@@ -1,0 +1,22 @@
+{
+  "name": "Ajew Ananach",
+  "subtitle": "Breslov Wisdom in Your Pocket",
+  "description": "Access 1,000+ teachings from Rabbi Nachman of Breslov in a beautiful mobile app. Read, search, and get daily wisdom.",
+  "keywords": [
+    "breslov",
+    "jewish",
+    "torah",
+    "wisdom",
+    "nachman",
+    "spirituality",
+    "hebrew",
+    "prayer"
+  ],
+  "supportUrl": "https://ajew.org/support",
+  "privacyPolicyUrl": "https://ajew.org/privacy",
+  "marketingUrl": "https://ajew.org",
+  "version": "1.0.0",
+  "build": "1",
+  "price": "FREE",
+  "ageRating": "4+"
+}

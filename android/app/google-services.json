@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "332819240015",
+    "project_id": "ajeworg",
+    "storage_bucket": "ajeworg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332819240015:android:7b587282ee5b7fd3bc863a",
+        "android_client_info": {
+          "package_name": "com.ajewananach"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCv4b0AE4s3e3i3WYqxZbdiwjKyZUJP4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

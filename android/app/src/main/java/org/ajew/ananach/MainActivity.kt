@@ -1,4 +1,4 @@
-package com.ajewananach
+package org.ajew.ananach
 
 import android.os.Build
 import android.os.Bundle

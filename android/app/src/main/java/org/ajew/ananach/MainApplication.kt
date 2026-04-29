@@ -1,4 +1,4 @@
-package com.ajewananach
+package org.ajew.ananach
 
 import android.app.Application
 import android.content.res.Configuration

@@ -6,6 +6,8 @@ import {
   StatusBar, Platform, Animated, Easing,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { Magnetometer } from 'expo-sensors';
+import * as Location from 'expo-location';
 
 // Jerusalem / Even HaShtiyah coordinates
 const JERUSALEM_LAT = 31.7780;
@@ -43,8 +45,6 @@ export default function CompassScreen({ navigation }) {
 
     const startCompass = async () => {
       try {
-        // Try expo-sensors first (Expo managed workflow)
-        const { Magnetometer } = require('expo-sensors');
         Magnetometer.setUpdateInterval(100);
         magnetometerSub = Magnetometer.addListener(data => {
           const { x, y } = data;
@@ -59,8 +59,7 @@ export default function CompassScreen({ navigation }) {
         setHasCompass(false);
         // Fallback: try geolocation heading
         try {
-          const { getCurrentPositionAsync } = require('expo-location');
-          watchId = await getCurrentPositionAsync({});
+          const pos = await Location.getCurrentPositionAsync({});
           // Some devices provide heading
         } catch (e2) {
           setError('Compass not available on this device');
@@ -80,8 +79,7 @@ export default function CompassScreen({ navigation }) {
   useEffect(() => {
     const getLocation = async () => {
       try {
-        const { getCurrentPositionAsync } = require('expo-location');
-        const pos = await getCurrentPositionAsync({ accuracy: 3 });
+        const pos = await Location.getCurrentPositionAsync({ accuracy: 3 });
         if (pos && pos.coords) {
           const b = calculateBearing(
             pos.coords.latitude,

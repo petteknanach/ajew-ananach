@@ -63,17 +63,6 @@
       "eas": {
         "projectId": "e30d1d3d-ecc2-4e67-920a-e11a4bb8dde9"
       }
-    },
-    "plugins": [
-      "expo-sensors",
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Allow Ajew Ananach to use your location for the Jerusalem compass.",
-          "locationAlwaysPermission": "Allow Ajew Ananach to use your location for the Jerusalem compass.",
-          "locationWhenInUsePermission": "Allow Ajew Ananach to use your location for the Jerusalem compass."
-        }
-      ]
-    ]
+    }
   }
 }

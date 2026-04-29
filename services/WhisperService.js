@@ -30,7 +30,7 @@ const WHISPER_SERVICE = {
         return false;
       }
     }
-  }
+  },
 
   // ── Listen ──
   async startListening(options = {}) {
@@ -84,7 +84,7 @@ const WHISPER_SERVICE = {
       onError?.(e.message);
       return { error: e.message };
     }
-  }
+  },
 
   async stopListening() {
     this._isListening = false;
@@ -97,7 +97,7 @@ const WHISPER_SERVICE = {
     } catch (e) {
       console.warn('Stop listening error:', e);
     }
-  }
+  },
 
   // ── Convenience: Voice Search ──
   async voiceSearch({ language = 'he-IL', onResult, onPartial, onError }) {
@@ -122,17 +122,17 @@ const WHISPER_SERVICE = {
         },
       });
     });
-  }
+  },
 
   // ── Convenience: Dictate Note ──
   async dictateNote({ language = 'he-IL', onPartial, onError }) {
     return this.voiceSearch({ language, onPartial, onError });
-  }
+  },
 
   // ── Status ──
   isListening() {
     return this._isListening;
-  }
+  },
 };
 
 export default WHISPER_SERVICE;

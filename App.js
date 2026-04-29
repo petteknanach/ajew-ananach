@@ -20,7 +20,7 @@ import AudioPlayerScreen from './screens/AudioPlayerScreen';
 import HisbodedusScreen from './screens/HisbodedusScreen';
 import PetekGeneratorScreen from './screens/PetekGeneratorScreen';
 import SmartFeedScreen from './screens/SmartFeedScreen';
-// import CompassScreen from './screens/CompassScreen';
+import CompassScreen from './screens/CompassScreen';
 
 // ── Constants ──
 const TIKUN_HAKLALI_PSALMS = [16, 32, 41, 42, 59, 77, 90, 105, 137, 150];
@@ -662,7 +662,7 @@ function HomeStack() {
       <Stack.Screen name="PetekGenerator" component={PetekGeneratorScreen} />
       <Stack.Screen name="AudioPlayer" component={AudioPlayerScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
-      {/* <Stack.Screen name="Compass" component={CompassScreen} /> */}
+      <Stack.Screen name="Compass" component={CompassScreen} />
     </Stack.Navigator>
   );
 }

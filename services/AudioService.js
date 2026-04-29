@@ -47,7 +47,7 @@ class AudioService {
       console.warn('Audio init failed (expo-av may not be installed):', e.message);
       return false;
     }
-  },
+  }
 
   // ── Track Management ──
   async loadPlaylist(bookId, tracks) {
@@ -58,7 +58,7 @@ class AudioService {
     }));
     this.currentIndex = 0;
     return this.playlist;
-  },
+  }
 
   async playTrack(index) {
     if (!Audio) {
@@ -110,7 +110,7 @@ class AudioService {
       console.error('Audio play error:', e);
       return { error: e.message };
     }
-  },
+  }
 
   async pause() {
     if (this.sound) {
@@ -118,7 +118,7 @@ class AudioService {
       this.isPlaying = false;
       this._notifyListeners();
     }
-  },
+  }
 
   async resume() {
     if (this.sound) {
@@ -126,26 +126,26 @@ class AudioService {
       this.isPlaying = true;
       this._notifyListeners();
     }
-  },
+  }
 
   async toggle() {
     if (this.isPlaying) await this.pause();
     else await this.resume();
-  },
+  }
 
   async next() {
     if (this.currentIndex < this.playlist.length - 1) {
       return await this.playTrack(this.currentIndex + 1);
     }
     return { error: 'End of playlist' };
-  },
+  }
 
   async prev() {
     if (this.currentIndex > 0) {
       return await this.playTrack(this.currentIndex - 1);
     }
     return { error: 'Start of playlist' };
-  },
+  }
 
   async seek(positionMs) {
     if (this.sound) {
@@ -153,7 +153,7 @@ class AudioService {
       this.position = positionMs;
       this._notifyListeners();
     }
-  },
+  }
 
   async setRate(rate) {
     this.playbackRate = rate;
@@ -161,7 +161,7 @@ class AudioService {
       await this.sound.setRateAsync(rate, true);
       this._notifyListeners();
     }
-  },
+  }
 
   async stop() {
     if (this.sound) {
@@ -171,7 +171,7 @@ class AudioService {
       this.isPlaying = false;
       this._notifyListeners();
     }
-  },
+  }
 
   async getStatus() {
     if (this.sound) {
@@ -183,7 +183,7 @@ class AudioService {
       }
     }
     return this.getState();
-  },
+  }
 
   getState() {
     return {
@@ -197,7 +197,7 @@ class AudioService {
       hasNext: this.currentIndex < this.playlist.length - 1,
       hasPrev: this.currentIndex > 0,
     };
-  },
+  }
 
   // ── Listener System ──
   addListener(fn) {
@@ -205,12 +205,12 @@ class AudioService {
     return () => {
       this.listeners = this.listeners.filter(l => l !== fn);
     };
-  },
+  }
 
   _notifyListeners() {
     const state = this.getState();
     this.listeners.forEach(fn => fn(state));
-  },
+  }
 
   // ── Build tracks from Kol HaTzadik ──
   // Kol HaTzadik recordings are on Internet Archive
@@ -225,7 +225,7 @@ class AudioService {
       bookId,
       type: rec.type || 'voice', // 'voice' or 'melody'
     }));
-  },
+  }
 
   // ── Saba recordings ──
   buildSabaTracks() {
@@ -242,7 +242,7 @@ class AudioService {
       });
     }
     return tracks;
-  },
+  }
 }
 
 export default new AudioService();

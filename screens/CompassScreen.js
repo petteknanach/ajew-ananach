@@ -9,7 +9,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Magnetometer } from 'expo-sensors';
 import * as Location from 'expo-location';
 
-// Jerusalem / Even HaShtiyah coordinates
 const JERUSALEM_LAT = 31.7780;
 const JERUSALEM_LON = 35.2354;
 const FALLBACK_HEADING = 54;
@@ -31,27 +30,20 @@ export default function CompassScreen({ navigation }) {
   const [bearing, setBearing] = useState(FALLBACK_HEADING);
   const [hasCompass, setHasCompass] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     let sub = null;
-
-    const start = async () => {
-      try {
-        Magnetometer.setUpdateInterval(100);
-        sub = Magnetometer.addListener(({ x, y }) => {
-          let angle = Math.atan2(y, x) * (180 / Math.PI);
-          setHeading((angle + 360) % 360);
-          setHasCompass(true);
-        });
-      } catch (e) {
-        setHasCompass(false);
-        setErrorMsg('Compass not available — showing approximate direction');
-      }
-    };
-
-    start();
+    try {
+      Magnetometer.setUpdateInterval(100);
+      sub = Magnetometer.addListener(({ x, y }) => {
+        setHeading((Math.atan2(y, x) * (180 / Math.PI) + 360) % 360);
+        setHasCompass(true);
+      });
+    } catch (e) {
+      setHasCompass(false);
+      setErrorMsg('Compass not available — showing approximate direction');
+    }
     return () => { if (sub) sub.remove(); };
   }, []);
 
@@ -60,10 +52,7 @@ export default function CompassScreen({ navigation }) {
       try {
         const pos = await Location.getCurrentPositionAsync({ accuracy: 3 });
         if (pos && pos.coords) {
-          setBearing(calculateBearing(
-            pos.coords.latitude, pos.coords.longitude,
-            JERUSALEM_LAT, JERUSALEM_LON
-          ));
+          setBearing(calculateBearing(pos.coords.latitude, pos.coords.longitude, JERUSALEM_LAT, JERUSALEM_LON));
           return;
         }
       } catch (e) {}
@@ -93,49 +82,35 @@ export default function CompassScreen({ navigation }) {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Jerusalem Compass</Text>
       </View>
-
       <View style={styles.container}>
         <View style={styles.infoCard}>
-          <Text style={styles.infoHebrew} dir="rtl">מצפן ירושלים</Text>
+          <Text style={styles.infoHebrew}>מצפן ירושלים</Text>
           <Text style={styles.infoSubtitle}>Toward the Even HaShtiyah · אבן השתיה</Text>
         </View>
-
         <View style={styles.compassContainer}>
           <View style={styles.compassOuter}>
             <Text style={[styles.cardinal, styles.cardinalN]}>N</Text>
             <Text style={[styles.cardinal, styles.cardinalS]}>S</Text>
             <Text style={[styles.cardinal, styles.cardinalE]}>E</Text>
             <Text style={[styles.cardinal, styles.cardinalW]}>W</Text>
-
             <Animated.View style={[styles.compassDial, { transform: [{ rotate: needleRotation }] }]}>
               <View style={styles.jerusalemMarker}>
                 <Icon name="location-on" size={24} color="#FFD700" />
                 <Text style={styles.jerusalemLabel}>ירושלים</Text>
               </View>
             </Animated.View>
-
             <View style={styles.compassCenter}>
               <View style={styles.centerDot} />
             </View>
           </View>
-
-          <Text style={styles.headingText}>
-            {hasCompass ? `${Math.round(heading)}°` : `${Math.round(bearing)}°`}
-          </Text>
+          <Text style={styles.headingText}>{hasCompass ? `${Math.round(heading)}°` : `${Math.round(bearing)}°`}</Text>
         </View>
-
         <View style={styles.prayerCard}>
-          <Text style={styles.prayerHebrew} dir="rtl">ואני תפילתי לך ה' עת רצון</Text>
+          <Text style={styles.prayerHebrew}>ואני תפילתי לך ה' עת רצון</Text>
           <Text style={styles.prayerEnglish}>"And I, my prayer to You, Hashem, at a time of favor"</Text>
           <Text style={styles.prayerSource}>Tehillim 69:14</Text>
         </View>
-
-        {errorMsg ? (
-          <View style={styles.errorCard}>
-            <Text style={styles.errorText}>{errorMsg}</Text>
-          </View>
-        ) : null}
-
+        {errorMsg ? <View style={styles.errorCard}><Text style={styles.errorText}>{errorMsg}</Text></View> : null}
         <Text style={styles.bearingText}>Bearing to Jerusalem: {Math.round(bearing)}°</Text>
       </View>
     </SafeAreaView>

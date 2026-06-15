@@ -1,6 +1,7 @@
 // AjewAPI.js - API Service Layer for Ajew Ananach Mobile App
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import pako from 'pako';
 
 // API Configuration
 const BASE_URL = 'https://ajew.org';
@@ -59,6 +60,7 @@ const BOOK_COLORS = [
 // Main API class
 class AjewAPI {
   constructor() {
+    this.searchIndexCache = {};
     this.axiosInstance = axios.create({
       baseURL: BASE_URL,
       timeout: 15000,
@@ -186,14 +188,15 @@ class AjewAPI {
 
   // Smarter content fetch using the actual URL from the index
   async getSectionByUrl(jsonFileUrl, forceRefresh = false) {
-    const cacheKey = `url_${jsonFileUrl}`;
+    const url = this.readerUrlToJsonUrl(jsonFileUrl);
+    const cacheKey = `url_${url}`;
     if (!forceRefresh) {
       const cached = await CacheService.get(cacheKey);
       if (cached) return { success: true, data: cached, source: 'cache' };
     }
 
     try {
-      const response = await this.axiosInstance.get(jsonFileUrl);
+      const response = await this.axiosInstance.get(url);
       const content = response.data;
       await CacheService.set(cacheKey, content);
       return { success: true, data: content, source: 'api' };
@@ -214,6 +217,126 @@ class AjewAPI {
     );
   }
 
+  stripNikud(text = '') {
+    return String(text).replace(/[\u0591-\u05C7]/g, '');
+  }
+
+  isHebrewQuery(query = '') {
+    return /[\u0590-\u05FF]/.test(query);
+  }
+
+  normalizeSearchText(text = '') {
+    return this.stripNikud(String(text)).toLowerCase();
+  }
+
+  readerUrlToJsonUrl(url = '') {
+    if (!url) return url;
+    return url.endsWith('.json') ? url : `${url}.json`;
+  }
+
+  parseReaderUrl(url = '') {
+    const parts = url.replace(/^https?:\/\/[^/]+/, '').split('/').filter(Boolean);
+    const readerIdx = parts.indexOf('reader');
+    const path = readerIdx >= 0 ? parts.slice(readerIdx + 1) : parts;
+    const book = path[0] || '';
+    let part = null;
+    let sectionNumber = (path[path.length - 1] || '').replace(/\.json$/, '');
+    if (path.length >= 3) {
+      const middle = path[path.length - 2] || '';
+      const partMatch = middle.match(/^part-(.+)$/);
+      const volumeMatch = middle.match(/^volume-(.+)$/);
+      if (partMatch) part = partMatch[1];
+      else if (volumeMatch) part = volumeMatch[1];
+      else part = middle;
+    }
+    const sectionMatch = sectionNumber.match(/^(torah|sicha|section|topic|halacha|tefila|letter|story|chapter|teaching|prayer|eitza|chain)-(.+)$/);
+    if (sectionMatch) sectionNumber = sectionMatch[2];
+    return { book, part, sectionNumber };
+  }
+
+  async fetchGzipJson(path) {
+    if (this.searchIndexCache[path]) return this.searchIndexCache[path];
+
+    const response = await this.axiosInstance.get(path, {
+      responseType: 'arraybuffer',
+      transformResponse: data => data,
+      timeout: 60000,
+    });
+    const jsonText = pako.ungzip(new Uint8Array(response.data), { to: 'string' });
+    const parsed = JSON.parse(jsonText);
+    this.searchIndexCache[path] = parsed;
+    return parsed;
+  }
+
+  async getSearchIndex(language = 'auto', query = '') {
+    const lang = language === 'auto' ? (this.isHebrewQuery(query) ? 'he' : 'en') : language;
+    const path = lang === 'he'
+      ? '/data/light-search-index-he.json.gz'
+      : '/data/light-search-index-en.json.gz';
+    return await this.fetchGzipJson(path);
+  }
+
+  makeSnippet(text = '', query = '', maxLen = 180) {
+    const plain = String(text).replace(/\s+/g, ' ').trim();
+    if (!plain) return '';
+    const normalized = this.normalizeSearchText(plain);
+    const terms = this.normalizeSearchText(query).split(/\s+/).filter(Boolean);
+    let idx = -1;
+    for (const term of terms) {
+      idx = normalized.indexOf(term);
+      if (idx >= 0) break;
+    }
+    if (idx < 0) return plain.slice(0, maxLen);
+    const start = Math.max(0, idx - 55);
+    const end = Math.min(plain.length, start + maxLen);
+    return `${start > 0 ? '…' : ''}${plain.slice(start, end)}${end < plain.length ? '…' : ''}`;
+  }
+
+  scoreDoc(doc, query) {
+    const q = this.normalizeSearchText(query).trim();
+    if (!q) return 0;
+    const terms = q.split(/\s+/).filter(Boolean);
+    const title = this.normalizeSearchText(`${doc.h || ''} ${doc.t || ''}`);
+    const body = this.normalizeSearchText(doc.x || '');
+    let score = 0;
+    if (title.includes(q)) score += 100;
+    if (body.includes(q)) score += 50;
+    for (const term of terms) {
+      if (title.includes(term)) score += 25;
+      if (body.includes(term)) score += 8;
+    }
+    return score;
+  }
+
+  async searchAllTeachings(query, { limit = 50, language = 'auto' } = {}) {
+    if (!query || !query.trim()) return { success: true, data: [], source: 'empty' };
+    try {
+      const index = await this.getSearchIndex(language, query);
+      const q = query.trim();
+      const results = index
+        .map(doc => ({ doc, score: this.scoreDoc(doc, q) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map(({ doc, score }) => ({
+          id: doc.l,
+          title: doc.t || doc.h || doc.b,
+          hebrewTitle: doc.h || '',
+          book: doc.b || '',
+          url: doc.l,
+          jsonUrl: this.readerUrlToJsonUrl(doc.l),
+          score,
+          snippet: this.makeSnippet(doc.x || doc.e || '', q),
+          englishSnippet: doc.e || '',
+          ...this.parseReaderUrl(doc.l),
+        }));
+      return { success: true, data: results, source: 'gzip' };
+    } catch (error) {
+      console.warn('Global search failed:', error.message);
+      return { success: false, data: [], error: error.message };
+    }
+  }
+
   // Search within section segments
   searchInSegments(segments, query) {
     if (!query || !query.trim()) return segments;
@@ -221,7 +344,10 @@ class AjewAPI {
     return segments.filter(seg =>
       (seg.he || '').includes(q) ||
       (seg.he_nikud || '').includes(q) ||
-      (seg.en || '').toLowerCase().includes(q)
+      (seg.verse || '').includes(q) ||
+      (seg.commentary_he || '').includes(q) ||
+      (seg.en || '').toLowerCase().includes(q) ||
+      (seg.commentary_en || '').toLowerCase().includes(q)
     );
   }
 

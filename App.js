@@ -408,46 +408,83 @@ function BookDetailScreen({ route, navigation }) {
 // ── SearchScreen ──
 function SearchScreen({ navigation }) {
   const [query, setQuery] = useState('');
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    (async () => {
-      const result = await ajewAPI.getBooks();
-      if (result.success) setBooks(result.data);
+    const q = query.trim();
+    if (!q) {
+      setResults([]);
+      setError(null);
       setLoading(false);
-    })();
-  }, []);
+      return undefined;
+    }
 
-  const results = useMemo(() => ajewAPI.searchBooks(books, query), [books, query]);
+    setLoading(true);
+    const timer = setTimeout(async () => {
+      const result = await ajewAPI.searchAllTeachings(q, { limit: 75, language: 'auto' });
+      if (result.success) {
+        setResults(result.data);
+        setError(null);
+      } else {
+        setResults([]);
+        setError(result.error || 'Search failed');
+      }
+      setLoading(false);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const openResult = (item) => {
+    navigation.navigate('Reading', {
+      book: item.book,
+      part: item.part,
+      sectionNumber: item.sectionNumber,
+      sectionTitle: item.title || item.hebrewTitle,
+      bookTitle: item.book,
+      bookHebrewTitle: item.hebrewTitle,
+      jsonFileUrl: item.jsonUrl,
+      allSections: [],
+      introSections: [],
+      currentIndex: 0,
+    });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screenHeader}>
-        <Text style={styles.screenHeaderTitle}>Search</Text>
+        <Text style={styles.screenHeaderTitle}>Search All Torah</Text>
+        <Text style={styles.screenHeaderSub}>Hebrew + English gzip index</Text>
       </View>
       <View style={styles.searchBarContainer}>
         <Icon name="search" size={20} color="#7f8c8d" />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search books, authors, Hebrew titles..."
+          placeholder="Search every teaching..."
           value={query}
           onChangeText={setQuery}
           autoFocus
           returnKeyType="search"
         />
+        {loading ? <ActivityIndicator size="small" color="#3498db" /> : null}
         {query ? (
           <TouchableOpacity onPress={() => setQuery('')}><Icon name="close" size={20} color="#7f8c8d" /></TouchableOpacity>
         ) : null}
       </View>
-      {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#3498db" /></View>
-      ) : !query ? (
+      {!query ? (
         <View style={styles.center}>
-          <Icon name="search" size={64} color="#ecf0f1" />
-          <Text style={styles.placeholderText}>Type to search across all books</Text>
+          <Icon name="travel-explore" size={64} color="#ecf0f1" />
+          <Text style={styles.placeholderText}>Search all 31,000+ teachings</Text>
+          <Text style={styles.placeholderSubtext}>Uses the same compressed gzip index as ajew.org</Text>
         </View>
-      ) : results.length === 0 ? (
+      ) : error ? (
+        <View style={styles.center}>
+          <Icon name="cloud-off" size={48} color="#e74c3c" />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : !loading && results.length === 0 ? (
         <View style={styles.center}>
           <Icon name="search-off" size={48} color="#bdc3c7" />
           <Text style={styles.noResults}>No results for "{query}"</Text>
@@ -455,15 +492,18 @@ function SearchScreen({ navigation }) {
       ) : (
         <FlatList
           data={results}
-          keyExtractor={item => item.id}
+          keyExtractor={(item, idx) => `${item.id}-${idx}`}
           contentContainerStyle={styles.listPadding}
+          keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={<Text style={styles.listHeader}>{results.length} matches</Text>}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.browseBookCard} onPress={() => navigation.navigate('BookDetail', { book: item })}>
-              <View style={[styles.bookColorBar, { backgroundColor: item.color || '#3498db' }]} />
+            <TouchableOpacity style={styles.searchResultCard} onPress={() => openResult(item)}>
+              <View style={[styles.bookColorBar, { backgroundColor: '#3498db' }]} />
               <View style={styles.flex1}>
-                <Text style={styles.browseBookHebrew}>{item.hebrewTitle}</Text>
-                <Text style={styles.browseBookTitle}>{item.title}</Text>
-                <Text style={styles.browseBookAuthor}>{item.author}</Text>
+                <Text style={styles.browseBookHebrew} numberOfLines={1}>{item.hebrewTitle}</Text>
+                <Text style={styles.browseBookTitle} numberOfLines={1}>{item.title}</Text>
+                <Text style={styles.searchResultMeta} numberOfLines={1}>{item.book} · {item.url}</Text>
+                <Text style={styles.searchSnippet} numberOfLines={3}>{item.snippet || item.englishSnippet}</Text>
               </View>
               <Icon name="chevron-right" size={20} color="#bdc3c7" />
             </TouchableOpacity>
@@ -810,6 +850,9 @@ const styles = StyleSheet.create({
   browseBookAuthor: { fontSize: 12, color: '#7f8c8d', marginTop: 2 },
   browseBookRight: { alignItems: 'center', flexDirection: 'row', marginLeft: 8 },
   browseBookCount: { fontSize: 12, color: '#7f8c8d', marginRight: 4 },
+  searchResultCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: 'white', padding: 14, borderRadius: 10, marginBottom: 8, elevation: 1 },
+  searchResultMeta: { fontSize: 11, color: '#95a5a6', marginTop: 2 },
+  searchSnippet: { fontSize: 13, color: '#34495e', marginTop: 6, lineHeight: 19 },
 
   // Book detail
   bookDetailHeader: { padding: 20, paddingTop: 10, flexDirection: 'row', alignItems: 'center' },

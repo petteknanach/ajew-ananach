@@ -30,7 +30,7 @@ const HIGHLIGHT_COLORS = ['#FFEB3B', '#FF9800', '#4CAF50', '#2196F3', '#E91E63',
 
 export default function ReadingScreen({ route, navigation }) {
   const {
-    book, part, sectionNumber, sectionTitle, sectionType,
+    book, part, sectionNumber, sectionTitle, sectionType, jsonFileUrl,
     bookTitle, bookHebrewTitle, allSections = [], introSections = [], currentIndex = 0,
   } = route.params;
 
@@ -65,14 +65,16 @@ export default function ReadingScreen({ route, navigation }) {
   }, []);
 
   // ── Load content ──
-  const loadContent = useCallback(async (bookId, partNum, secNum, secType) => {
+  const loadContent = useCallback(async (bookId, partNum, secNum, secType, directJsonUrl) => {
     setLoading(true);
     setError(null);
     setSearchQuery('');
     setShowSearch(false);
 
     let result;
-    if (secType === 'haskamos' || secType === 'intro') {
+    if (directJsonUrl) {
+      result = await ajewAPI.getSectionByUrl(directJsonUrl);
+    } else if (secType === 'haskamos' || secType === 'intro') {
       result = await ajewAPI.getSectionByUrl(
         `/reader/${bookId}/${partNum ? `part-${partNum}/` : ''}${secType === 'haskamos' ? 'haskamos' : 'intro'}.json`
       );
@@ -83,7 +85,8 @@ export default function ReadingScreen({ route, navigation }) {
     }
 
     if (result.success) {
-      setContent(result.data);
+      const loadedContent = result.data;
+      setContent(loadedContent);
       const bm = await ajewAPI.isBookmarked(bookId, partNum, secNum);
       setIsBookmarked(bm);
 
@@ -99,18 +102,18 @@ export default function ReadingScreen({ route, navigation }) {
       await StorageService.saveReadingProgress(
         bookId, partNum, secNum,
         bookTitle,
-        content?.hebrewTitle || content?.title || sectionTitle || ''
+        loadedContent?.hebrewTitle || loadedContent?.title || sectionTitle || ''
       );
       await StorageService.recordDailyRead();
     } else {
       setError(result.error || 'Failed to load content');
     }
     setLoading(false);
-  }, [bookTitle]);
+  }, [bookTitle, sectionTitle]);
 
   useEffect(() => {
-    loadContent(book, part, sectionNumber, sectionType);
-  }, [book, part, sectionNumber, sectionType, loadContent]);
+    loadContent(book, part, sectionNumber, sectionType, jsonFileUrl);
+  }, [book, part, sectionNumber, sectionType, jsonFileUrl, loadContent]);
 
   // ── Swipe gesture ──
   const panResponder = useMemo(() => PanResponder.create({

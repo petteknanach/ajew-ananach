@@ -2,7 +2,7 @@
   "expo": {
     "name": "Ajew Ananach",
     "slug": "ajew-ananach",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,7 +18,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.ajew.ananach",
-      "buildNumber": "1",
+      "buildNumber": "3",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
@@ -37,7 +37,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "org.ajew.ananach",
-      "versionCode": 2,
+      "versionCode": 3,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
@@ -57,7 +57,7 @@
       "policy": "sdkVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/your-project-id-here"
+      "url": "https://u.expo.dev/e30d1d3d-ecc2-4e67-920a-e11a4bb8dde9"
     },
     "extra": {
       "eas": {

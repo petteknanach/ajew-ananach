@@ -37,7 +37,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.ajewananach",
-      "versionCode": 4,
+      "versionCode": 5,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
